@@ -1,6 +1,7 @@
 <html>
     <head>
         <meta charset="utf-8">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <title>Meu Primeiro Jogo Multiplayer</title>
 
         <style>
@@ -9,6 +10,7 @@
                 padding: 0;
                 background-color: #EEE;
                 text-align: center;
+                font: 13px Helvetica, Arial;
             }
 
             #screen {
@@ -69,13 +71,34 @@
             #score-table .current-player {
                 color: #bdaa27;
             }
+            
+            form {background: #000; padding: 3px; bottom: 0; width: 100%; margin: 0; box-sizing: border-box;}
+            form input { border: 0; padding: 10px; width: 90%; margin-right: 0.5%; }
+            form button { width: 30%; background: rgb(130, 224, 255); border: none; padding: 10px;}
+            #messages { list-style-type: none; margin: 0; padding: 0; height: 60vh; overflow-y:auto; line-break: anywhere;}
+            #messages li { padding: 5px 10px; }
+            #messages li:nth-child(odd) { background: #eee; }
 
         </style>
         <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     </head>
     <body>
-        <canvas id="screen" width="10" height="10"></canvas>
-        <table id="score-table"></table>
+        <section class="d-flex justify-content-around container">
+            <div>
+                <ul id="messages"></ul>
+                <form  class="d-flex" action="">
+                    <input id="m" autocomplete="off" />
+                    <button>Enviar Mensagem</button>
+                </form>
+            </div>
+            <div>
+                <canvas id="screen" width="10" height="10"></canvas>
+                <table id="score-table"></table>
+            </div>
+        </section>
 
         <script type="module">
             import createGame from './game.js'
@@ -98,7 +121,20 @@
                 setupScreen(screen, game)
                 renderScreen(screen, scoreTable, game, requestAnimationFrame, playerId)
             })
-
+            //chat
+            $('form').submit(function(e){
+                e.preventDefault(); // prevents page reloading
+                socket.emit('chat message', $('#m').val());
+                $('#m').val('');
+                return false;
+            });
+            socket.on('chat message', function(msg){
+                $('#messages').append($('<li>').text(msg));
+            });
+            socket.on('disconnect message', function(msg){
+                $('#messages').append($('<li>').text(msg));
+            });
+            // fim chat
             socket.on('disconnect', () => {
                 console.log('Unsubscribing All')
                 keyboardListener.unsubscribeAll();

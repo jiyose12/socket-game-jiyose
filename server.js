@@ -25,9 +25,14 @@ sockets.on('connection', (socket) => {
 
     socket.emit('setup', game.state)
 
+    socket.on('chat message', (msg) => {
+        sockets.emit('chat message', `>${playerId}: ${msg}`);
+      });
+
     socket.on('disconnect', () => {
         game.removePlayer({ playerId: playerId })
         console.log(`> Player disconnected: ${playerId}`)
+        sockets.emit('disconnect message', `> Player disconnected: ${playerId}`)
     })
 
     socket.on('move-player', (command) => {
